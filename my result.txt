@@ -1,0 +1,24 @@
+Sensor Error Model: 
+
+T =
+
+    1.0000         0         0
+   -0.0156    1.0000         0
+    0.0531    0.0034    1.0000
+
+
+S =
+
+    1.0064         0         0
+         0    0.9969         0
+         0         0    0.9937
+
+
+b =
+
+    0.0009
+   -0.0052
+    0.0136
+
+RMSE before calibration:     0.015470 g 
+RMSE after calibration:      0.000426 g 
