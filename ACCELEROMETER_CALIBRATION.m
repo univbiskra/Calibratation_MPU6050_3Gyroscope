@@ -1,3 +1,4 @@
+%% For paper   Systematic Development of an Open-Source Quadrotor Research Platform
 %% 3-AXIS ACCELEROMETER CALIBRATION SCRIPT:
  
 %   1) DATA PREPROCESSING: Measurements from a 3-axis accelerometer are collected and averaged across various static orientations, resulting in the dataset 'accelerationData.'
