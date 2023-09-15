@@ -1,0 +1,200 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>ACCELEROMETER_CALIBRATION</title><meta name="generator" content="MATLAB 9.13"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2023-09-15"><meta name="DC.source" content="ACCELEROMETER_CALIBRATION.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">3-AXIS ACCELEROMETER CALIBRATION SCRIPT:</a></li><li><a href="#2">1) DATA PREPROC</a></li><li><a href="#3">2) OPTIMIZATION</a></li><li><a href="#4">3) EVALUATION</a></li></ul></div><h2 id="1">3-AXIS ACCELEROMETER CALIBRATION SCRIPT:</h2><pre class="codeinput"><span class="comment">%   1) DATA PREPROCESSING: Measurements from a 3-axis accelerometer are collected and averaged across various static orientations, resulting in the dataset 'accelerationData.'</span>
+<span class="comment">%   2) OPTIMIZATION: The 'fminunc' optimization algorithm is employed to estimate the parameters of the Sensor Error Model (SEM), which accounts for errors in the accelerometer's measurements.</span>
+<span class="comment">%   3) EVALUATION: The accelerometer readings in 'accelerationData' are corrected using the estimated SEM parameters, and the Root Mean Squared Error (RMSE) is calculated to assess calibration effectiveness.</span>
+</pre><h2 id="2">1) DATA PREPROC</h2><pre class="codeinput">close <span class="string">all</span>; clear <span class="string">all</span>;
+fprintf(<span class="string">'accelerometer calibration  \n'</span>);
+
+load(<span class="string">'acceleration_data.mat'</span>);        <span class="comment">% Data for calibration consists of multiple sets of measurements. Each set, denoted as accelerationData(1:3, i),</span>
+<span class="comment">% represents the averaged readings % obtained from 1000 static samples recorded at a sampling rate of 100 Hz. These measurements are expressed in units of gravity (g).</span>
+
+gravityMagnitude = 1;                                     <span class="comment">% Magnitude of the gravity field vector (~9.81 m/s^2)</span>
+numSamples = length(accelerationData);                      <span class="comment">% Number of samples in accelerationData</span>
+
+initialGuess = [0, 0, 0, 1, 1, 1, 0, 0, 0];
+<span class="comment">% initial guess or initial values for the parameters of the Sensor Error Model</span>
+<span class="comment">% ALFAxy, ALFAzx, ALFAzy: These three values represent the misalignment angles between the accelerometer axes and the ideal orthogonal (perfectly aligned) axes. They are typically expressed in radians and describe how the accelerometer axes are oriented relative to the desired reference axes.</span>
+<span class="comment">%Sx, Sy, Sz: These three values represent the scale factors for each axis of the accelerometer. Scale factors account for any systematic scaling errors in the accelerometer measurements. These values are dimensionless and should be close to 1 for a well-calibrated accelerometer.</span>
+<span class="comment">%bx, by, bz: These three values represent the bias or offset values for each axis of the accelerometer. Bias values account for any constant offsets or drift in the accelerometer readings. They are typically expressed in the same units as the accelerometer measurements (e.g., in g).</span>
+</pre><pre class="codeoutput">accelerometer calibration  
+</pre><h2 id="3">2) OPTIMIZATION</h2><pre class="codeinput"> [xOptimized, f_val, exit_flag, output, grade] = fminunc(@(x)optimizeAccelerometer(x, numSamples, accelerationData, gravityMagnitude), initialGuess);   <span class="comment">% fminunc for optimisation</span>
+ fprintf(<span class="string">'ACC SEM (Sensor-Error-Model) is : \n'</span>);
+
+
+
+<span class="comment">% Sensor Error Model SEM:  scaleFactor Matrix   | orthogonalization Matrix</span>
+<span class="comment">%  | baisOffsets</span>
+scaleFactorMatrix       = [xOptimized(4), 0, 0; 0, xOptimized(5), 0; 0, 0, xOptimized(6)]          <span class="comment">% Scale Factor Matrix</span>
+biasOffsets             = [xOptimized(7); xOptimized(8); xOptimized(9)]                            <span class="comment">% Offsets</span>
+orthogonalizationMatrix = [1, 0, 0; xOptimized(1), 1, 0; xOptimized(2), xOptimized(3), 1]          <span class="comment">% Orthogonalization matrix</span>
+</pre><pre class="codeoutput">
+Local minimum possible.
+
+fminunc stopped because the size of the current step is less than
+the value of the step size tolerance.
+
+ACC SEM (Sensor-Error-Model) is : 
+
+scaleFactorMatrix =
+
+    1.0064         0         0
+         0    0.9969         0
+         0         0    0.9937
+
+
+biasOffsets =
+
+    0.0009
+   -0.0052
+    0.0136
+
+
+orthogonalizationMatrix =
+
+    1.0000         0         0
+   -0.0156    1.0000         0
+    0.0531    0.0034    1.0000
+
+</pre><h2 id="4">3) EVALUATION</h2><pre class="codeinput">[CorrectedAcceleration] = ApplyCorrection(accelerationData, numSamples, orthogonalizationMatrix, scaleFactorMatrix, biasOffsets);      <span class="comment">% Correction of accelerations using SEM estimated using fminunc function</span>
+                                                        <span class="comment">% (measured_data, number of samples, T, S, b)</span>
+
+[RMSEBeforeCalibration, deviationBeforeCalibration] = calculateRMSE(accelerationData, numSamples, gravityMagnitude);       <span class="comment">% Computation of RMSE before calibration</span>
+[RMSEAfterCalibration, deviationAfterCalibration] = calculateRMSE(CorrectedAcceleration, numSamples, gravityMagnitude);       <span class="comment">% Computation of RMSE after calibration</span>
+
+fprintf(<span class="string">'The RMSE Before Calibration Process:     %.6f g \n'</span>, RMSEBeforeCalibration);
+fprintf(<span class="string">'The RMSE After Calibration Process:      %.6f g \n'</span>, RMSEAfterCalibration);
+
+figure;
+plot(deviationBeforeCalibration, <span class="string">'r--'</span>); hold <span class="string">on</span>; grid <span class="string">on</span>;
+plot(deviationAfterCalibration, <span class="string">'gr'</span>);
+title(<span class="string">'Deviation Comparison Before and After SEM Correction in Measured Orientations'</span>);
+xlabel(<span class="string">'The Orientation Step (8 Position each axes) '</span>);
+ylabel(<span class="string">'Delta = sqrt(ACC_x^2+ACC_x^2+ACC_z^2) - G (g)'</span>);
+legend(<span class="string">'Deviation Before Calibration'</span>,<span class="string">'Deviation After Calibration'</span>);
+</pre><pre class="codeoutput">The RMSE Before Calibration Process:     0.015470 g 
+The RMSE After Calibration Process:      0.000426 g 
+</pre><img vspace="5" hspace="5" src="ACCELEROMETER_CALIBRATION_01.png" alt=""> <p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% 3-AXIS ACCELEROMETER CALIBRATION SCRIPT:
+ 
+%   1) DATA PREPROCESSING: Measurements from a 3-axis accelerometer are collected and averaged across various static orientations, resulting in the dataset 'accelerationData.'
+%   2) OPTIMIZATION: The 'fminunc' optimization algorithm is employed to estimate the parameters of the Sensor Error Model (SEM), which accounts for errors in the accelerometer's measurements.
+%   3) EVALUATION: The accelerometer readings in 'accelerationData' are corrected using the estimated SEM parameters, and the Root Mean Squared Error (RMSE) is calculated to assess calibration effectiveness.
+
+ 
+%% 1) DATA PREPROC 
+
+close all; clear all;
+fprintf('accelerometer calibration  \n');
+
+load('acceleration_data.mat');        % Data for calibration consists of multiple sets of measurements. Each set, denoted as accelerationData(1:3, i), 
+% represents the averaged readings % obtained from 1000 static samples recorded at a sampling rate of 100 Hz. These measurements are expressed in units of gravity (g).       
+
+gravityMagnitude = 1;                                     % Magnitude of the gravity field vector (~9.81 m/s^2)
+numSamples = length(accelerationData);                      % Number of samples in accelerationData
+
+initialGuess = [0, 0, 0, 1, 1, 1, 0, 0, 0];          
+% initial guess or initial values for the parameters of the Sensor Error Model
+% ALFAxy, ALFAzx, ALFAzy: These three values represent the misalignment angles between the accelerometer axes and the ideal orthogonal (perfectly aligned) axes. They are typically expressed in radians and describe how the accelerometer axes are oriented relative to the desired reference axes.
+%Sx, Sy, Sz: These three values represent the scale factors for each axis of the accelerometer. Scale factors account for any systematic scaling errors in the accelerometer measurements. These values are dimensionless and should be close to 1 for a well-calibrated accelerometer.                                           
+%bx, by, bz: These three values represent the bias or offset values for each axis of the accelerometer. Bias values account for any constant offsets or drift in the accelerometer readings. They are typically expressed in the same units as the accelerometer measurements (e.g., in g).
+
+%% 2) OPTIMIZATION
+ [xOptimized, f_val, exit_flag, output, grade] = fminunc(@(x)optimizeAccelerometer(x, numSamples, accelerationData, gravityMagnitude), initialGuess);   % fminunc for optimisation    
+ fprintf('ACC SEM (Sensor-Error-Model) is : \n');
+
+
+
+% Sensor Error Model SEM:  scaleFactor Matrix   | orthogonalization Matrix
+%  | baisOffsets 
+scaleFactorMatrix       = [xOptimized(4), 0, 0; 0, xOptimized(5), 0; 0, 0, xOptimized(6)]          % Scale Factor Matrix
+biasOffsets             = [xOptimized(7); xOptimized(8); xOptimized(9)]                            % Offsets
+orthogonalizationMatrix = [1, 0, 0; xOptimized(1), 1, 0; xOptimized(2), xOptimized(3), 1]          % Orthogonalization matrix
+
+%% 3) EVALUATION
+[CorrectedAcceleration] = ApplyCorrection(accelerationData, numSamples, orthogonalizationMatrix, scaleFactorMatrix, biasOffsets);      % Correction of accelerations using SEM estimated using fminunc function 
+                                                        % (measured_data, number of samples, T, S, b)
+
+[RMSEBeforeCalibration, deviationBeforeCalibration] = calculateRMSE(accelerationData, numSamples, gravityMagnitude);       % Computation of RMSE before calibration
+[RMSEAfterCalibration, deviationAfterCalibration] = calculateRMSE(CorrectedAcceleration, numSamples, gravityMagnitude);       % Computation of RMSE after calibration
+
+fprintf('The RMSE Before Calibration Process:     %.6f g \n', RMSEBeforeCalibration);
+fprintf('The RMSE After Calibration Process:      %.6f g \n', RMSEAfterCalibration);
+
+figure; 
+plot(deviationBeforeCalibration, 'rREPLACE_WITH_DASH_DASH'); hold on; grid on;
+plot(deviationAfterCalibration, 'gr');
+title('Deviation Comparison Before and After SEM Correction in Measured Orientations'); 
+xlabel('The Orientation Step (8 Position each axes) '); 
+ylabel('Delta = sqrt(ACC_x^2+ACC_x^2+ACC_z^2) - G (g)');
+legend('Deviation Before Calibration','Deviation After Calibration');
+##### SOURCE END #####
+--></body></html>
